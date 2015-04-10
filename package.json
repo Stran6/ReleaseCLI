@@ -4,7 +4,8 @@
   "description": "CLI Tool for releasing a project.",
   "main": "index.js",
   "scripts": {
-    "build": "babel src --out-dir lib"
+    "build": "babel src --out-dir lib",
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -15,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/Stran6/ReleaseCLI/issues"
   },
-  "homepage": "https://github.com/Stran6/ReleaseCLI"
+  "homepage": "https://github.com/Stran6/ReleaseCLI",
+  "devDependencies": {
+    "babel": "^5.0.12"
+  }
 }
