@@ -18,6 +18,9 @@
   },
   "homepage": "https://github.com/Stran6/ReleaseCLI",
   "devDependencies": {
-    "babel": "^5.0.12"
+    "babel": "^5.0.12",
+    "mocha": "^2.2.4",
+    "semver": "^4.3.3",
+    "yargs": "^3.7.1"
   }
 }

@@ -1,12 +1,13 @@
-class VersionBump {
-    bump(currentVersion, type) {
-        
-        var version = require('semver').inc(currentVersion, 'pre', 'gamma');
-        //var test = version.substring(version.indexOf('z') + 1, version.length);
-        
-        return version;
-//        return "Version:" + ' ' + version + ' ' + "Type:" + ' ' + type;
-    }
+import semver from 'semver'
+    
+export default function VersionBump(currentVersion, type, preid) {    
+    var version = semver.inc(currentVersion, type, preid);
+    
+    if(semver.valid(version) == null)
+        throw new Error("Invalid version.");
+    
+    if(!semver.gt(version, currentVersion))
+        throw new Error("Older version.");
+    
+    return version;
 }
-
-export default VersionBump;
