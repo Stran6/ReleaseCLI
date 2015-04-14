@@ -1,15 +1,30 @@
-import yargs from 'yargs'
+import yargs from 'yargs';
+import VersionBump from "../lib/version-bump.js";
+import fsp from 'fs-promise';
+import path from 'path';
+import pkg from '../package.json';
 
-import VersionBump from "../lib/version-bump.js"
-
-yargs.usage('bin/release <args>').option('v', {describe: 'Version Number (x.x.x) [Required]'}).option('t', {describe: 'Bump Type (major/minor/patch/pre/premajor/preminor/prepatch) [Required]'}).option('p', {describe: 'PreID (alpha, beta, ...) [Only use with pre- bump types]'}).example('bin/release -v 1.2.3 -t major', '|   Performs major version bump on 1.2.3');
+yargs.usage('bin/release <command> <options>')
+    .command('bump', 'Updates the version of the program using the specified options.')
+    .options({
+    'type': {alias: 't', describe: 'Bump Type (major/minor/patch/pre/premajor/preminor/prepatch)'},
+    'preid': {alias: 'p', describe: 'PreID (alpha, beta, ...) [Only use with pre- bump types]'}})
+    .nargs('type', 1)
+    .nargs('preid', 1)
+    .example('bin/release bump -t major', '|    Updates major version (Ex. 1.2.3 -> 2.0.0)')
+    .demand('type')
+    .help('help').alias('help', 'h')
+    .showHelpOnFail(false, "Use --help or -h for options.");
     
-if(yargs.argv.help)
+if(yargs.argv._ == "bump")
 {
-    yargs.showHelp();
+    pkg.version = VersionBump(pkg.version, yargs.argv.type, yargs.argv.preid);
+    
+    fsp.writeFile(file('package.json'), JSON.stringify(pkg, null, "  "));
 }
-else
-{
-    yargs.demand(['v', 't']);
-    console.log(VersionBump(yargs.argv.v, yargs.argv.t, yargs.argv.p));
+
+function file() {
+    let args = [].slice.call(arguments);
+    args.unshift(__dirname + '\\..\\');
+    return path.join.apply(path, args);
 }

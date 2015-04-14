@@ -1,6 +1,6 @@
 {
   "name": "ReleaseCLI",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "CLI Tool for releasing a project.",
   "main": "index.js",
   "scripts": {
@@ -19,6 +19,7 @@
   "homepage": "https://github.com/Stran6/ReleaseCLI",
   "devDependencies": {
     "babel": "^5.0.12",
+    "fs-promise": "^0.3.1",
     "mocha": "^2.2.4",
     "semver": "^4.3.3",
     "yargs": "^3.7.1"

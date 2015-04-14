@@ -1,7 +1,7 @@
-import semver from 'semver'
-    
+import semver from 'semver';
+
 export default function VersionBump(currentVersion, type, preid) {    
-    var version = semver.inc(currentVersion, type, preid);
+    let version = semver.inc(currentVersion, type, preid);
     
     if(semver.valid(version) == null)
         throw new Error("Invalid version.");
