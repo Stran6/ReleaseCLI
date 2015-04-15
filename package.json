@@ -1,6 +1,6 @@
 {
   "name": "ReleaseCLI",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "CLI Tool for releasing a project.",
   "main": "index.js",
   "scripts": {
