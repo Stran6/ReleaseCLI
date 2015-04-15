@@ -17,12 +17,25 @@ yargs.usage('bin/release <command> <options>')
     .help('help').alias('help', 'h')
     .showHelpOnFail(false, "Use --help or -h for options.");
     
-//if(yargs.argv._ == "bump")
-//{
-//    pkg.version = VersionBump(pkg.version, yargs.argv.type, yargs.argv.preid);
-//    
-//    fsp.writeFile(file('package.json'), JSON.stringify(pkg, null, "  "));
-//}
+if(yargs.argv._ == "bump") {
+    let newVersion = VersionBump(pkg.version, yargs.argv.type, yargs.argv.preid);
+    pkg.version = newVersion;
+    
+    fsp.writeFile(file('package.json'), JSON.stringify(pkg, null, "  "));
+    
+    executeShellCommand('git add package.json')
+    .then(function() {
+        executeShellCommand('git commit -m "Release v' + newVersion + '"')
+            .then(function() {
+            executeShellCommand('git tag ' + pkg.name + 'v' + newVersion)
+                .then(function() {
+                executeShellCommand('git push --tags')
+            })
+        })
+    })
+    
+    executeShellCommand('echo npm publish');
+}
 
 function file() {
     let args = [].slice.call(arguments);
@@ -30,16 +43,18 @@ function file() {
     return path.join.apply(path, args);
 }
 
-exec('git add .')
-     .then(function (result) {
-        var stdout = result.stdout;
-        var stderr = result.stderr;
+function executeShellCommand(command) {
+    return exec(command)
+        .then(function (result) {
+        let stdout = result.stdout;
+        let stderr = result.stderr;
         console.log('stdout: ', stdout);
         console.log('stderr: ', stderr);
-})
-.fail(function (err) {
-    console.error('ERROR: ', err);
-})
-.progress(function (childProcess) {
-    console.log('childProcess.pid: ', childProcess.pid);
-});
+    })
+    .fail(function (err) {
+        console.error('ERROR: ', err);
+    })
+//    .progress(function (childProcess) {
+//        console.log('childProcess.pid: ', childProcess.pid);
+//    }); 
+}
