@@ -3,6 +3,7 @@ import VersionBump from "../lib/version-bump.js";
 import fsp from 'fs-promise';
 import path from 'path';
 import pkg from '../package.json';
+import {exec} from 'child-process-promise'
 
 yargs.usage('bin/release <command> <options>')
     .command('bump', 'Updates the version of the program using the specified options.')
@@ -16,15 +17,29 @@ yargs.usage('bin/release <command> <options>')
     .help('help').alias('help', 'h')
     .showHelpOnFail(false, "Use --help or -h for options.");
     
-if(yargs.argv._ == "bump")
-{
-    pkg.version = VersionBump(pkg.version, yargs.argv.type, yargs.argv.preid);
-    
-    fsp.writeFile(file('package.json'), JSON.stringify(pkg, null, "  "));
-}
+//if(yargs.argv._ == "bump")
+//{
+//    pkg.version = VersionBump(pkg.version, yargs.argv.type, yargs.argv.preid);
+//    
+//    fsp.writeFile(file('package.json'), JSON.stringify(pkg, null, "  "));
+//}
 
 function file() {
     let args = [].slice.call(arguments);
     args.unshift(__dirname + '\\..\\');
     return path.join.apply(path, args);
 }
+
+exec('git add .')
+     .then(function (result) {
+        var stdout = result.stdout;
+        var stderr = result.stderr;
+        console.log('stdout: ', stdout);
+        console.log('stderr: ', stderr);
+})
+.fail(function (err) {
+    console.error('ERROR: ', err);
+})
+.progress(function (childProcess) {
+    console.log('childProcess.pid: ', childProcess.pid);
+});
