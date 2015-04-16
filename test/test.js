@@ -1,8 +1,23 @@
-import VersionBump from "../src/version-bump.js"
-import semver from 'semver'
+import VersionBump from '../src/version-bump';
+import semver from 'semver';
+import yargsParse from '../src/yargs-parse';
+import pkg from '../package.json';
+import {versionRelease} from '../src/CLI';
 
-describe('Version Bumping', function() {
+
+describe('YARGS Parsing', function() {
+    it('Parse Bump & Type(major)', function() {
+        let argv = yargsParse(['bump', '-t', 'major']);
+        assert.equal(argv._[0], "bump");
+        assert.equal(argv.type, "major");
+    })
+    it('Parse Preid(alpha)', function() {
+        let argv = yargsParse(["bump", "-t", "major", "-p", "alpha"]);
+        assert.equal(argv.preid, "alpha");
+    })
+})
     
+describe('Version Bumping', function() {
     describe('Major', function() {
         let major = VersionBump('1.2.3', "major");
         
@@ -108,39 +123,25 @@ describe('Version Bumping', function() {
     
     describe('Error Validation', function() {
         it('Invalid Version - Letters', function() {
-            try {
-                VersionBump("a.b.c", "major");
-            }
-            catch(error) {
-                assert.equal(error.message, "Invalid version.");
-            }
+            assert.throws(() => VersionBump("a.b.c", "major"), Error, "Invalid version.");
         })
-        
         it('Invalid Version - Syntax', function() {
-            try {
-                VersionBump("1.2", "major");
-            }
-            catch(error) {
-                assert.equal(error.message, "Invalid version.");
-            }
+            assert.throws(() => VersionBump("1.2", "major"), "Error", "Invalid version.");
         })
-            
         it('Release->Pre-release', function() {
-            try {
-                VersionBump("1.2.3", "pre", "alpha");
-            }
-            catch(error) {
-                assert.equal(error.message, "Older version.");
-            }
+            assert.throws(() => VersionBump("1.2.3", "pre", "alpha"), "Error", "Older version.");
         })
-        
         it('Pre-release Beta->Alpha', function() {
-            try {
-                VersionBump("1.2.3-beta.0", "pre", "alpha");
-            }
-            catch(error) {
-                assert.equal(error.message, "Older version.");
-            }
+            assert.throws(() => VersionBump("1.2.3-beta.0", "pre", "alpha"), "Error", "Older version.");
         })
+    })
+})
+
+describe('Program Execution', function() {
+    it('package.json Version', function(done) {
+        let version = pkg.version;
+        versionRelease("patch");
+        done();
+        assert(semver.gt(pkg.version, version));
     })
 })

@@ -1,60 +1,35 @@
-import yargs from 'yargs';
 import VersionBump from "../lib/version-bump.js";
 import fsp from 'fs-promise';
 import path from 'path';
 import pkg from '../package.json';
-import {exec} from 'child-process-promise'
+import {exec} from 'child-process-promise';
+import yargsParse from '../lib/yargs-parse';
 
-yargs.usage('bin/release <command> <options>')
-    .command('bump', 'Updates the version of the program using the specified options.')
-    .options({
-    'type': {alias: 't', describe: 'Bump Type (major/minor/patch/pre/premajor/preminor/prepatch)'},
-    'preid': {alias: 'p', describe: 'PreID (alpha, beta, ...) [Only use with pre- bump types]'}})
-    .nargs('type', 1)
-    .nargs('preid', 1)
-    .example('bin/release bump -t major', '|    Updates major version (Ex. 1.2.3 -> 2.0.0)')
-    .demand('type')
-    .help('help').alias('help', 'h')
-    .showHelpOnFail(false, "Use --help or -h for options.");
-    
-if(yargs.argv._ == "bump") {
-    let newVersion = VersionBump(pkg.version, yargs.argv.type, yargs.argv.preid);
-    pkg.version = newVersion;
-    
-    fsp.writeFile(file('package.json'), JSON.stringify(pkg, null, "  "));
-    
-    executeShellCommand('git add package.json')
-    .then(function() {
-        executeShellCommand('git commit -m "Release v' + newVersion + '"')
-            .then(function() {
-            executeShellCommand('git tag ' + pkg.name + 'v' + newVersion)
-                .then(function() {
-                executeShellCommand('git push --tags')
-            })
-        })
-    })
-    
-    executeShellCommand('echo npm publish');
+
+if(process.argv > 2) {
+    let argv = yargsParse(process.argv);
+
+    if(argv._[2] == "bump") {
+        versionRelease(type, preid);
+        npmPublish();
+    }
 }
 
-function file() {
-    let args = [].slice.call(arguments);
-    args.unshift(__dirname + '\\..\\');
-    return path.join.apply(path, args);
-}
+export function versionRelease(type, preid) {
+        let newVersion = VersionBump(pkg.version, type, preid);
+        pkg.version = newVersion;
 
-function executeShellCommand(command) {
-    return exec(command)
-        .then(function (result) {
-        let stdout = result.stdout;
-        let stderr = result.stderr;
-        console.log('stdout: ', stdout);
-        console.log('stderr: ', stderr);
-    })
-    .fail(function (err) {
-        console.error('ERROR: ', err);
-    })
-//    .progress(function (childProcess) {
-//        console.log('childProcess.pid: ', childProcess.pid);
-//    }); 
+        return fsp.writeFile('package.json', JSON.stringify(pkg, null, "  "))
+            .then(() => exec('git add package.json'))
+            .then(() => exec(`git commit -m "Release v${newVersion}"`))
+            .then(() => exec(`git tag ${pkg.name} v${newVersion}`))
+            .then(() => exec('git push --tags'))
+            .catch(error => {
+            console.Error('ERROR: ', error);
+            process.exit(1);
+        });
+}
+    
+function npmPublish() {
+    return exec('echo npm publish');
 }
